@@ -1,6 +1,7 @@
 module Cowlaser.Route
 ( dir
 , dirP
+, root
 ) where
 
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
@@ -32,5 +33,14 @@ dirP pred action = do
     then local (_ {uri = rest}) action
     else empty
 
+-- | Run the supplied computation if the URI has no path components.
+root :: forall r m a
+      . (MonadReader {uri :: String | r} m, Plus m)
+     => m a
+     -> m a
+root action = ask <#> _.uri >>> isRoot >>= if _ then action else empty
+
 foreign import extractFirstPathComponent
   :: String -> {first :: String, rest :: String}
+
+foreign import isRoot :: String -> Boolean
