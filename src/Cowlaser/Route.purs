@@ -22,6 +22,7 @@ import Control.MonadZero (guard, class MonadZero)
 import Cowlaser.HTTP (Response)
 import Data.List (List(..))
 import Data.Maybe (fromMaybe)
+import Data.String (toUpper)
 import Node.Encoding (Encoding(UTF8))
 import Node.Stream.Aff as Stream
 import Prelude
@@ -50,7 +51,7 @@ method :: forall r m
        => String
        -> m Unit
 method lookfor =
-  guard =<< (compareCI lookfor) <<< _.method <$> ask
+  guard =<< (\x -> toUpper x == toUpper lookfor) <<< _.method <$> ask
 
 -- | Check the first path component and run the supplied computation if it
 -- | matches. The supplied computation will observe the URI without this path
@@ -81,8 +82,6 @@ root :: forall r m
       . (MonadReader {uri :: String | r} m, MonadZero m)
      => m Unit
 root = guard =<< isRoot <<< _.uri <$> ask
-
-foreign import compareCI :: String -> String -> Boolean
 
 foreign import extractFirstPathComponent
   :: String -> {first :: String, rest :: String}

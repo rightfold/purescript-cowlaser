@@ -7,6 +7,7 @@ module Cowlaser.HTTP
 
 import Control.Monad.Aff (Aff)
 import Data.List (List(..))
+import Data.String (toUpper)
 import Node.HTTP (HTTP)
 import Node.Stream (Readable, Writable)
 import Prelude
@@ -35,7 +36,6 @@ headerValues
 headerValues lookfor = go Nil <<< _.headers
   where go acc Nil = acc
         go acc (Cons {name, value} rest)
-          | name `compareCI` lookfor = go (Cons value acc) rest
+          | toUpper name == toUpper lookfor =
+              go (Cons value acc) rest
           | otherwise = go acc rest
-
-foreign import compareCI :: String -> String -> Boolean

@@ -17,7 +17,8 @@
     "purescript-maps": "^1.1.0",
     "purescript-tuples": "^1.0.0",
     "purescript-node-buffer": "^1.0.0",
-    "purescript-foldable-traversable": "^1.0.0"
+    "purescript-foldable-traversable": "^1.0.0",
+    "purescript-strings": "^1.1.0"
   },
   "devDependencies": {
     "purescript-assert": "^1.0.0",
