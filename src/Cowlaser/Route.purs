@@ -1,5 +1,6 @@
 module Cowlaser.Route
 ( dir
+, dirP
 ) where
 
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
@@ -16,9 +17,17 @@ dir :: forall r m a
     => String
     -> m a
     -> m a
-dir lookfor action = do
+dir lookfor = dirP (_ == lookfor)
+
+-- | Like `dir`, but with a custom predicate.
+dirP :: forall r m a
+      . (MonadReader {uri :: String | r} m, Plus m)
+     => (String -> Boolean)
+     -> m a
+     -> m a
+dirP pred action = do
   {first, rest} <- extractFirstPathComponent <<< _.uri <$> ask
-  if first == lookfor
+  if pred first
     then local (_ {uri = rest}) action
     else empty
 
