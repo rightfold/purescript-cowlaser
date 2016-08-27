@@ -12,7 +12,8 @@
 -- | website = index <|> newUser
 -- | ```
 module Cowlaser.Route
-( dir
+( method
+, dir
 , dirP
 , root
 ) where
@@ -20,6 +21,18 @@ module Cowlaser.Route
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
 import Control.MonadZero (guard, class MonadZero)
 import Prelude
+
+-- | Check the request method and run the supplied computation if it matches.
+-- | The request method is checked case-insensitively as per the HTTP
+-- | specification.
+method :: forall r m a
+        . (MonadReader {method :: String | r} m, MonadZero m)
+       => String
+       -> m a
+       -> m a
+method lookfor action = do
+  guard =<< (compareCI lookfor) <<< _.method <$> ask
+  action
 
 -- | Check the first path component and run the supplied computation if it
 -- | matches. The supplied computation will observe the URI without this path
@@ -53,6 +66,8 @@ root :: forall r m a
 root action = do
   guard =<< isRoot <<< _.uri <$> ask
   action
+
+foreign import compareCI :: String -> String -> Boolean
 
 foreign import extractFirstPathComponent
   :: String -> {first :: String, rest :: String}
