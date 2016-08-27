@@ -27,7 +27,7 @@ setup is OK.
 
 First, you need some extra PureScript libraries:
 
-    bower install --save purescript-{eff,lists,node-buffer,node-http,prelude}
+    bower install --save purescript-{eff,maps,node-buffer,node-http,prelude}
 
 Now create a file called `src/Main.purs`, and add some boilerplate:
 
@@ -37,7 +37,7 @@ module Main (main) where
 import Control.Monad.Eff (Eff)
 import Cowlaser.HTTP (Response)
 import Cowlaser.Serve (nodeHandler)
-import Data.List (List(..))
+import Data.Map as Map
 import Node.Encoding (Encoding(UTF8))
 import Node.HTTP (createServer, HTTP, listen)
 import Node.Stream.Aff (end, writeString)
@@ -50,7 +50,7 @@ will read thus:
 ```purescript
 handler :: forall eff m. (Applicative m) => m (Response eff)
 handler = pure { status: {code: 200, message: "OK"}
-               , headers: Nil
+               , headers: Map.empty
                , body: \w -> do
                    writeString w UTF8 "Hello, world!"
                    end w
