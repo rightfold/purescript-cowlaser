@@ -68,6 +68,6 @@ main = do
 
 And that's all we need! You can now run the application:
 
-    pulp test && node -e 'require("./output/Main").main()'
+    pulp build && node -e 'require("./output/Main").main()'
 
 and visit it at http://localhost:8080/.
