@@ -3,10 +3,13 @@ module Cowlaser.Serve
 ) where
 
 import Control.Monad.Aff (Aff, runAff)
+import Control.Monad.Aff.Class (class MonadAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
-import Control.Monad.Reader.Trans (ReaderT, runReaderT)
+import Control.Monad.Maybe.Trans (runMaybeT)
+import Control.Monad.Reader.Class (class MonadReader)
+import Control.Monad.Reader.Trans (runReaderT)
+import Control.MonadZero (class MonadZero)
 import Cowlaser.HTTP (Request, Response)
 import Data.List (List(..))
 import Data.Maybe (fromMaybe)
@@ -22,7 +25,13 @@ import Prelude
 -- | handler. You can pass this handler to `Node.HTTP.createServer`.
 nodeHandler
   :: forall eff
-   . ReaderT (Request eff) (MaybeT (Aff (http :: HTTP | eff))) (Response eff)
+   . (  forall m
+      . ( MonadAff (http :: HTTP | eff) m
+        , MonadReader (Request eff) m
+        , MonadZero m
+        )
+     => m (Response eff)
+     )
   -> (N.Request -> N.Response -> Eff (http :: HTTP | eff) Unit)
 nodeHandler handler nReq nRes = void $
   runAff (\_ -> pure unit)
@@ -48,7 +57,7 @@ node2req nReq =
   , body: N.requestAsStream nReq
   }
 
-res2node :: forall r eff. N.Response -> Response eff -> Aff (http :: HTTP | eff) Unit
+res2node :: forall eff. N.Response -> Response eff -> Aff (http :: HTTP | eff) Unit
 res2node nRes res = do
   liftEff $ do
     N.setStatusCode nRes res.status.code
