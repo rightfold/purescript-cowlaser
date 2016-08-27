@@ -6,7 +6,7 @@
 -- | index = root *> pure "Welcome to my website!"
 -- | newUser = dir "users" $ dir "new" $ root *> pure "<form>…</form>"
 -- |
--- | website = index <|> newUser
+-- | website = withRouting (index <|> newUser)
 -- | ```
 module Cowlaser.Route
 ( withRouting
