@@ -19,7 +19,8 @@ dir :: forall r m a
     -> m a
 dir lookfor = dirP (_ == lookfor)
 
--- | Like `dir`, but with a custom predicate.
+-- | Like `dir`, but with a custom predicate. The predicate takes the first
+-- | path component as its argument.
 dirP :: forall r m a
       . (MonadReader {uri :: String | r} m, Plus m)
      => (String -> Boolean)
