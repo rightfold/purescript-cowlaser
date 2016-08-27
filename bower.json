@@ -10,7 +10,8 @@
     "purescript-lists": "^1.0.1",
     "purescript-eff": "^1.0.0",
     "purescript-maps": "^1.1.0",
-    "purescript-tuples": "^1.0.0"
+    "purescript-tuples": "^1.0.0",
+    "purescript-node-buffer": "^1.0.0"
   },
   "devDependencies": {
     "purescript-assert": "^1.0.0",

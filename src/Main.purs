@@ -3,7 +3,6 @@ module Main
 ) where
 
 import Control.Alt ((<|>))
-import Control.Monad.Aff (makeAff)
 import Control.Monad.Reader.Class (class MonadReader)
 import Control.MonadZero (class MonadZero)
 import Cowlaser.HTTP (Request, Response)
@@ -11,7 +10,7 @@ import Cowlaser.Route (dir, root)
 import Cowlaser.Serve (nodeHandler)
 import Data.List (List(..))
 import Node.HTTP (createServer, listen)
-import Node.Stream (end)
+import Node.Stream.Aff (end)
 import Prelude
 
 main = do
@@ -23,12 +22,12 @@ handler1 = do
   root
   pure { status: {code: 200, message: "OK"}
        , headers: Nil
-       , body: \w -> makeAff \_ r -> end w (r unit)
+       , body: \w -> end w
        }
 
 handler2 :: forall eff m. (MonadReader (Request eff) m, MonadZero m) => m (Response eff)
 handler2 = dir "foo" $
   pure { status: {code: 500, message: "Internal Server Error"}
        , headers: Nil
-       , body: \w -> makeAff \_ r -> end w (r unit)
+       , body: \w -> end w
        }

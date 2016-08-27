@@ -2,7 +2,7 @@ module Cowlaser.Serve
 ( nodeHandler
 ) where
 
-import Control.Monad.Aff (Aff, makeAff, runAff)
+import Control.Monad.Aff (Aff, runAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
@@ -14,7 +14,7 @@ import Data.StrMap as StrMap
 import Data.Tuple (Tuple(..))
 import Node.HTTP (HTTP)
 import Node.HTTP as N
-import Node.Stream as Stream
+import Node.Stream.Aff as Stream
 import Prelude
 
 -- | `nodeHandler` takes a Cowlaser request handler and returns a Node request
@@ -36,7 +36,7 @@ nodeHandler handler nReq nRes =
 notFound :: forall eff. Response eff
 notFound = { status: {code: 404, message: "Not Found"}
            , headers: Nil
-           , body: \w -> makeAff \_ r -> Stream.end w (r unit)
+           , body: Stream.end
            }
 
 node2req :: forall eff. N.Request -> Request eff
@@ -48,7 +48,7 @@ node2req nReq =
   , body: N.requestAsStream nReq
   }
 
-res2node :: forall eff. N.Response -> Response eff -> Aff (http :: HTTP | eff) Unit
+res2node :: forall r eff. N.Response -> Response eff -> Aff (http :: HTTP | eff) Unit
 res2node nRes res = do
   liftEff $ do
     N.setStatusCode nRes res.status.code
