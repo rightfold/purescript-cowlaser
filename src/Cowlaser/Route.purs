@@ -9,15 +9,38 @@
 -- | website = index <|> newUser
 -- | ```
 module Cowlaser.Route
-( method
+( withRouting
+, method
 , dir
 , dirP
 , root
 ) where
 
+import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
 import Control.MonadZero (guard, class MonadZero)
+import Cowlaser.HTTP (Response)
+import Data.List (List(..))
+import Data.Maybe (fromMaybe)
+import Node.Encoding (Encoding(UTF8))
+import Node.Stream.Aff as Stream
 import Prelude
+
+-- | Add routing to the stack.
+withRouting
+  :: forall m eff
+   . (Functor m)
+  => (MaybeT m (Response eff))
+  -> m (Response eff)
+withRouting action = runMaybeT action <#> fromMaybe notFound
+  where notFound :: forall eff. Response eff
+        notFound =
+          { status: {code: 404, message: "Not Found"}
+          , headers: Nil
+          , body: \w -> do
+              Stream.writeString w UTF8 "404 Not Found"
+              Stream.end w
+          }
 
 -- | Continue only if the request method matches the given string.
 -- | The request method is checked case-insensitively as per the HTTP

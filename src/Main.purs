@@ -6,7 +6,7 @@ import Control.Alt ((<|>))
 import Control.Monad.Reader.Class (class MonadReader)
 import Control.MonadZero (class MonadZero)
 import Cowlaser.HTTP (Request, Response)
-import Cowlaser.Route (dir, root)
+import Cowlaser.Route (dir, root, withRouting)
 import Cowlaser.Serve (nodeHandler)
 import Data.List (List(..))
 import Node.HTTP (createServer, listen)
@@ -14,7 +14,7 @@ import Node.Stream.Aff (end)
 import Prelude
 
 main = do
-  server <- createServer $ nodeHandler (handler1 <|> handler2)
+  server <- createServer $ nodeHandler (withRouting $ handler1 <|> handler2)
   listen server 8080 (pure unit)
 
 handler1 :: forall eff m. (MonadReader (Request eff) m, MonadZero m) => m (Response eff)

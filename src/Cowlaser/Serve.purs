@@ -6,19 +6,13 @@ import Control.Monad.Aff (Aff, runAff)
 import Control.Monad.Aff.Class (class MonadAff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
-import Control.Monad.Maybe.Trans (runMaybeT)
 import Control.Monad.Reader.Class (class MonadReader)
 import Control.Monad.Reader.Trans (runReaderT)
-import Control.MonadZero (class MonadZero)
 import Cowlaser.HTTP (Request, Response)
-import Data.List (List(..))
-import Data.Maybe (fromMaybe)
 import Data.StrMap as StrMap
 import Data.Tuple (Tuple(..))
-import Node.Encoding (Encoding(UTF8))
 import Node.HTTP (HTTP)
 import Node.HTTP as N
-import Node.Stream.Aff as Stream
 import Prelude
 
 -- | `nodeHandler` takes a Cowlaser request handler and returns a Node request
@@ -28,7 +22,6 @@ nodeHandler
    . (  forall m
       . ( MonadAff (http :: HTTP | eff) m
         , MonadReader (Request eff) m
-        , MonadZero m
         )
      => m (Response eff)
      )
@@ -36,17 +29,7 @@ nodeHandler
 nodeHandler handler nReq nRes = void $
   runAff (\_ -> pure unit)
          (\_ -> pure unit)
-         (runMaybeT (runReaderT handler (node2req nReq))
-            >>= fromMaybe notFound >>> res2node nRes)
-
-notFound :: forall eff. Response eff
-notFound =
-  { status: {code: 404, message: "Not Found"}
-  , headers: Nil
-  , body: \w -> do
-      Stream.writeString w UTF8 "404 Not Found"
-      Stream.end w
-  }
+         (runReaderT handler (node2req nReq) >>= res2node nRes)
 
 node2req :: forall eff. N.Request -> Request eff
 node2req nReq =
