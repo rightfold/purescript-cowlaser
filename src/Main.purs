@@ -12,7 +12,7 @@ import Prelude
 
 handler :: forall eff m. (Applicative m) => m (Response eff)
 handler = pure { status: {code: 200, message: "OK"}
-               , headers: Nil
+               , headers: Cons {name: "Content-Type", value: "text/html"} Nil
                , body: \w -> do
                    writeString w UTF8 "Hello, world!"
                    end w

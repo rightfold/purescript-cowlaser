@@ -9,8 +9,11 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Reader.Class (class MonadReader)
 import Control.Monad.Reader.Trans (runReaderT)
 import Cowlaser.HTTP (Request, Response)
+import Data.List as List
+import Data.StrMap (StrMap)
 import Data.StrMap as StrMap
-import Data.Tuple (Tuple(..))
+import Data.Traversable (traverse_)
+import Data.Tuple (Tuple(..), uncurry)
 import Node.HTTP (HTTP)
 import Node.HTTP as N
 import Prelude
@@ -45,5 +48,12 @@ res2node nRes res = do
   liftEff $ do
     N.setStatusCode nRes res.status.code
     N.setStatusMessage nRes res.status.message
-    -- TODO: N.setHeaders
+    List.toUnfoldable res.headers
+      # makeHeaders
+      # StrMap.toList
+      # traverse_ (uncurry $ N.setHeaders nRes)
   res.body (N.responseAsStream nRes)
+
+foreign import makeHeaders
+  :: Array {name :: String, value :: String}
+  -> StrMap (Array String)
