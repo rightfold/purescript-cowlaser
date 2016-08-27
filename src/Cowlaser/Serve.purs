@@ -9,35 +9,35 @@ import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
 import Control.Monad.Reader.Trans (ReaderT, runReaderT)
 import Cowlaser.HTTP (Request, Response)
 import Data.List (List(..))
-import Data.Maybe (Maybe(..))
+import Data.Maybe (fromMaybe)
 import Data.StrMap as StrMap
 import Data.Tuple (Tuple(..))
+import Node.Encoding (Encoding(UTF8))
 import Node.HTTP (HTTP)
 import Node.HTTP as N
 import Node.Stream.Aff as Stream
 import Prelude
 
 -- | `nodeHandler` takes a Cowlaser request handler and returns a Node request
--- | handler.
+-- | handler. You can pass this handler to `Node.HTTP.createServer`.
 nodeHandler
   :: forall eff
    . ReaderT (Request eff) (MaybeT (Aff (http :: HTTP | eff))) (Response eff)
   -> (N.Request -> N.Response -> Eff (http :: HTTP | eff) Unit)
-nodeHandler handler nReq nRes =
-  let req = node2req nReq
-    in runAff (\_ -> pure unit)
-              (\_ -> pure unit)
-              (runMaybeT (runReaderT handler req)
-               >>= case _ of
-                     Just res -> res2node nRes res
-                     Nothing  -> res2node nRes notFound)
-       # void
+nodeHandler handler nReq nRes = void $
+  runAff (\_ -> pure unit)
+         (\_ -> pure unit)
+         (runMaybeT (runReaderT handler (node2req nReq))
+            >>= fromMaybe notFound >>> res2node nRes)
 
 notFound :: forall eff. Response eff
-notFound = { status: {code: 404, message: "Not Found"}
-           , headers: Nil
-           , body: Stream.end
-           }
+notFound =
+  { status: {code: 404, message: "Not Found"}
+  , headers: Nil
+  , body: \w -> do
+      Stream.writeString w UTF8 "404 Not Found"
+      Stream.end w
+  }
 
 node2req :: forall eff. N.Request -> Request eff
 node2req nReq =
