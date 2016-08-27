@@ -8,5 +8,9 @@
     "purescript-transformers": "^1.0.0",
     "purescript-node-streams": "^1.0.0",
     "purescript-lists": "^1.0.1"
+  },
+  "devDependencies": {
+    "purescript-assert": "^1.0.0",
+    "purescript-eff": "^1.0.0"
   }
 }
