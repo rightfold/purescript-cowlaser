@@ -40,7 +40,7 @@ nodeHandler handler nReq nRes = void $
 
 node2req :: forall eff. N.Request -> Request eff
 node2req nReq =
-  { method: N.requestMethod nReq
+  { method: CI (N.requestMethod nReq)
   , uri: N.requestURL nReq
   , headers: N.requestHeaders nReq
                # StrMap.toList

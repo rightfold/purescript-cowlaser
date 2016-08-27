@@ -22,7 +22,7 @@ import Control.MonadZero (guard, class MonadZero)
 import Cowlaser.HTTP (Response)
 import Data.Map as Map
 import Data.Maybe (fromMaybe)
-import Data.String (toUpper)
+import Data.String.CaseInsensitive (CI)
 import Node.Encoding (Encoding(UTF8))
 import Node.Stream.Aff as Stream
 import Prelude
@@ -47,11 +47,11 @@ withRouting action = runMaybeT action <#> fromMaybe notFound
 -- | The request method is checked case-insensitively as per the HTTP
 -- | specification.
 method :: forall r m
-        . (MonadReader {method :: String | r} m, MonadZero m)
-       => String
+        . (MonadReader {method :: CI | r} m, MonadZero m)
+       => CI
        -> m Unit
 method lookfor =
-  guard =<< (\x -> toUpper x == toUpper lookfor) <<< _.method <$> ask
+  guard =<< eq lookfor <<< _.method <$> ask
 
 -- | Check the first path component and run the supplied computation if it
 -- | matches. The supplied computation will observe the URI without this path

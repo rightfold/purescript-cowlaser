@@ -13,7 +13,7 @@ import Node.Stream (Readable, Writable)
 import Prelude
 
 type Request eff =
-  { method :: String
+  { method :: CI
   , uri :: String
   , headers :: Map CI (NonEmpty List String)
   , body :: Readable () (http :: HTTP | eff)
