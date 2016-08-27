@@ -4,6 +4,7 @@ import Control.Monad.Eff (Eff)
 import Cowlaser.HTTP (Response)
 import Cowlaser.Serve (nodeHandler)
 import Data.List (List(..))
+import Data.String.CaseInsensitive (CI(..))
 import Node.Encoding (Encoding(UTF8))
 import Node.HTTP (createServer, HTTP, listen)
 import Node.Stream.Aff (end, writeString)
@@ -12,7 +13,7 @@ import Prelude
 
 handler :: forall eff m. (Applicative m) => m (Response eff)
 handler = pure { status: {code: 200, message: "OK"}
-               , headers: Cons {name: "Content-Type", value: "text/html"} Nil
+               , headers: Cons {name: CI "Content-Type", value: "text/html"} Nil
                , body: \w -> do
                    writeString w UTF8 "Hello, world!"
                    end w

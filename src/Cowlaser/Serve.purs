@@ -10,6 +10,7 @@ import Control.Monad.Reader.Class (class MonadReader)
 import Control.Monad.Reader.Trans (runReaderT)
 import Cowlaser.HTTP (Request, Response)
 import Data.List as List
+import Data.String.CaseInsensitive (CI(..))
 import Data.StrMap (StrMap)
 import Data.StrMap as StrMap
 import Data.Traversable (traverse_)
@@ -39,7 +40,7 @@ node2req nReq =
   { method: N.requestMethod nReq
   , uri: N.requestURL nReq
   , headers: StrMap.toList (N.requestHeaders nReq)
-             # map \(Tuple name value) -> {name, value}
+             # map \(Tuple name value) -> {name: CI name, value}
   , body: N.requestAsStream nReq
   }
 
@@ -55,5 +56,5 @@ res2node nRes res = do
   res.body (N.responseAsStream nRes)
 
 foreign import makeHeaders
-  :: Array {name :: String, value :: String}
+  :: Array {name :: CI, value :: String}
   -> StrMap (Array String)

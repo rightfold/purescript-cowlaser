@@ -7,7 +7,7 @@ module Cowlaser.HTTP
 
 import Control.Monad.Aff (Aff)
 import Data.List (List(..))
-import Data.String (toUpper)
+import Data.String.CaseInsensitive (CI)
 import Node.HTTP (HTTP)
 import Node.Stream (Readable, Writable)
 import Prelude
@@ -15,13 +15,13 @@ import Prelude
 type Request eff =
   { method :: String
   , uri :: String
-  , headers :: List {name :: String, value :: String}
+  , headers :: List {name :: CI, value :: String}
   , body :: Readable () (http :: HTTP | eff)
   }
 
 type Response eff =
   { status :: {code :: Int, message :: String}
-  , headers :: List {name :: String, value :: String}
+  , headers :: List {name :: CI, value :: String}
   , body :: Writable () (http :: HTTP | eff) -> Aff (http :: HTTP | eff) Unit
   }
 
@@ -30,12 +30,11 @@ type Response eff =
 -- | The order of the values in the result is unspecified.
 headerValues
   :: forall r
-   . String
-  -> {headers :: List {name :: String, value :: String} | r}
+   . CI
+  -> {headers :: List {name :: CI, value :: String} | r}
   -> List String
 headerValues lookfor = go Nil <<< _.headers
   where go acc Nil = acc
         go acc (Cons {name, value} rest)
-          | toUpper name == toUpper lookfor =
-              go (Cons value acc) rest
+          | name == lookfor = go (Cons value acc) rest
           | otherwise = go acc rest
