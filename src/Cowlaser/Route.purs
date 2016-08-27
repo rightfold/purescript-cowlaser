@@ -20,7 +20,7 @@ import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
 import Control.MonadZero (guard, class MonadZero)
 import Cowlaser.HTTP (Response)
-import Data.List (List(..))
+import Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Data.String (toUpper)
 import Node.Encoding (Encoding(UTF8))
@@ -34,10 +34,10 @@ withRouting
   => (MaybeT m (Response eff))
   -> m (Response eff)
 withRouting action = runMaybeT action <#> fromMaybe notFound
-  where notFound :: forall eff. Response eff
+  where notFound :: forall e. Response e
         notFound =
           { status: {code: 404, message: "Not Found"}
-          , headers: Nil
+          , headers: Map.empty
           , body: \w -> do
               Stream.writeString w UTF8 "404 Not Found"
               Stream.end w

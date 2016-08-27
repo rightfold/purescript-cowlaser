@@ -1,9 +1,12 @@
 module Main (main) where
 
 import Control.Monad.Eff (Eff)
-import Cowlaser.HTTP (Response)
+import Control.Monad.Reader.Class (ask, class MonadReader)
+import Cowlaser.HTTP (Request, Response)
 import Cowlaser.Serve (nodeHandler)
 import Data.List (List(..))
+import Data.NonEmpty ((:|))
+import Data.Map as Map
 import Data.String.CaseInsensitive (CI(..))
 import Node.Encoding (Encoding(UTF8))
 import Node.HTTP (createServer, HTTP, listen)
@@ -11,13 +14,15 @@ import Node.Stream.Aff (end, writeString)
 import Prelude
 
 
-handler :: forall eff m. (Applicative m) => m (Response eff)
-handler = pure { status: {code: 200, message: "OK"}
-               , headers: Cons {name: CI "Content-Type", value: "text/html"} Nil
-               , body: \w -> do
-                   writeString w UTF8 "Hello, world!"
-                   end w
-               }
+handler :: forall eff m. (MonadReader (Request eff) m) => m (Response eff)
+handler = do
+  (req :: Request eff) <- ask
+  pure { status: {code: 200, message: "OK"}
+       , headers: Map.singleton (CI "Content-Type") ("text/html" :| Nil)
+       , body: \w -> do
+           writeString w UTF8 ("<pre>" <> show req.headers <> "</pre>")
+           end w
+       }
 
 main :: forall eff. Eff (http :: HTTP | eff) Unit
 main = do

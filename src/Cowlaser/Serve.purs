@@ -9,9 +9,12 @@ import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Reader.Class (class MonadReader)
 import Control.Monad.Reader.Trans (runReaderT)
 import Cowlaser.HTTP (Request, Response)
-import Data.List as List
-import Data.String.CaseInsensitive (CI(..))
-import Data.StrMap (StrMap)
+import Data.Array as Array
+import Data.Foldable (foldr)
+import Data.List (List(..))
+import Data.Map as Map
+import Data.NonEmpty ((:|))
+import Data.String.CaseInsensitive (CI(..), unCI)
 import Data.StrMap as StrMap
 import Data.Traversable (traverse_)
 import Data.Tuple (Tuple(..), uncurry)
@@ -39,8 +42,9 @@ node2req :: forall eff. N.Request -> Request eff
 node2req nReq =
   { method: N.requestMethod nReq
   , uri: N.requestURL nReq
-  , headers: StrMap.toList (N.requestHeaders nReq)
-             # map \(Tuple name value) -> {name: CI name, value}
+  , headers: N.requestHeaders nReq
+               # StrMap.toList
+               # foldr (\(Tuple k v) -> Map.insert (CI k) (v :| Nil)) Map.empty
   , body: N.requestAsStream nReq
   }
 
@@ -49,12 +53,7 @@ res2node nRes res = do
   liftEff $ do
     N.setStatusCode nRes res.status.code
     N.setStatusMessage nRes res.status.message
-    List.toUnfoldable res.headers
-      # makeHeaders
-      # StrMap.toList
+    Map.toList res.headers
+      # map (\(Tuple k v) -> Tuple (unCI k) (Array.fromFoldable v))
       # traverse_ (uncurry $ N.setHeaders nRes)
   res.body (N.responseAsStream nRes)
-
-foreign import makeHeaders
-  :: Array {name :: CI, value :: String}
-  -> StrMap (Array String)
