@@ -1,3 +1,16 @@
+-- | Routing combinators.
+-- |
+-- | Routes are simply higher-order request handlers that may fail using
+-- | `MonadZero`.
+-- |
+-- | #### Example
+-- |
+-- | ```purescript
+-- | index = root $ pure "Welcome to my website!"
+-- | newUser = dir "users" $ dir "new" $ root $ pure "<form>…</form>"
+-- |
+-- | website = index <|> newUser
+-- | ```
 module Cowlaser.Route
 ( dir
 , dirP
