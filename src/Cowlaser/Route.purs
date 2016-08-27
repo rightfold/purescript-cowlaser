@@ -1,13 +1,10 @@
 -- | Routing combinators.
 -- |
--- | Routes are simply higher-order request handlers that may fail using
--- | `MonadZero`.
--- |
 -- | #### Example
 -- |
 -- | ```purescript
--- | index = root $ pure "Welcome to my website!"
--- | newUser = dir "users" $ dir "new" $ root $ pure "<form>…</form>"
+-- | index = root *> pure "Welcome to my website!"
+-- | newUser = dir "users" $ dir "new" $ root *> pure "<form>…</form>"
 -- |
 -- | website = index <|> newUser
 -- | ```
@@ -22,17 +19,15 @@ import Control.Monad.Reader.Class (ask, local, class MonadReader)
 import Control.MonadZero (guard, class MonadZero)
 import Prelude
 
--- | Check the request method and run the supplied computation if it matches.
+-- | Continue only if the request method matches the given string.
 -- | The request method is checked case-insensitively as per the HTTP
 -- | specification.
-method :: forall r m a
+method :: forall r m
         . (MonadReader {method :: String | r} m, MonadZero m)
        => String
-       -> m a
-       -> m a
-method lookfor action = do
+       -> m Unit
+method lookfor =
   guard =<< (compareCI lookfor) <<< _.method <$> ask
-  action
 
 -- | Check the first path component and run the supplied computation if it
 -- | matches. The supplied computation will observe the URI without this path
@@ -58,14 +53,11 @@ dirP pred action = do
   guard (pred first)
   local (_ {uri = rest}) action
 
--- | Run the supplied computation if the URI has no path components.
-root :: forall r m a
+-- | Continue only if the URI has no path components.
+root :: forall r m
       . (MonadReader {uri :: String | r} m, MonadZero m)
-     => m a
-     -> m a
-root action = do
-  guard =<< isRoot <<< _.uri <$> ask
-  action
+     => m Unit
+root = guard =<< isRoot <<< _.uri <$> ask
 
 foreign import compareCI :: String -> String -> Boolean
 

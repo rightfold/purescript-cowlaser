@@ -29,10 +29,10 @@ main = do
   assert $ runReaderT index {uri: "/?foo"} == Just "/?foo"
   assert $ runReaderT index {uri: "/foo"} == Just "nope"
   where get :: ReaderT {method :: String} Maybe String
-        get = method "get" (_.method <$> ask) <|> lift (Just "nope")
+        get = (method "get" *> (_.method <$> ask)) <|> lift (Just "nope")
 
         foo :: ReaderT {uri :: String} Maybe String
         foo = dir "foo" (_.uri <$> ask) <|> lift (Just "nope")
 
         index :: ReaderT {uri :: String} Maybe String
-        index = root (_.uri <$> ask) <|> lift (Just "nope")
+        index = (root *> (_.uri <$> ask)) <|> lift (Just "nope")
