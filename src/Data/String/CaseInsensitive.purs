@@ -18,4 +18,4 @@ instance ordCI :: Ord CI where
   compare (CI a) (CI b) = toUpper a `compare` toUpper b
 
 instance showCI :: Show CI where
-  show (CI s) = "CI " <> show s
+  show (CI s) = "(CI " <> show s <> ")"
