@@ -13,6 +13,7 @@ module Cowlaser.Route
 , method
 , dir
 , dirP
+, dirA
 , root
 ) where
 
@@ -77,11 +78,12 @@ dirP pred action = dirA \x -> guard (pred x) *> action
 -- | Like `dir`, but matches <strong>a</strong>ny first path component. The
 -- | first path component is passed as an argument to the Kleisli arrow.
 dirA :: forall r m a
-      . (MonadReader {uri :: String | r} m)
+      . (MonadReader {uri :: String | r} m, MonadZero m)
      => (String -> m a)
      -> m a
 dirA action = do
   {first, rest} <- extractFirstPathComponent <<< _.uri <$> ask
+  guard (first /= "")
   local (_ {uri = rest}) (action first)
 
 -- | Continue only if the URI has no path components.
