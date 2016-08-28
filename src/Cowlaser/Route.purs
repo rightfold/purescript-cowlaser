@@ -66,8 +66,8 @@ dir :: forall r m a
     -> m a
 dir lookfor = dirP (_ == lookfor)
 
--- | Like `dir`, but with a custom <strong>p</strong>redicate. The predicate
--- | takes the first path component as its argument.
+-- | Like `dir`, but with a custom *p*redicate. The predicate takes the first
+-- | path component as its argument.
 dirP :: forall r m a
       . (MonadReader {uri :: String | r} m, MonadZero m)
      => (String -> Boolean)
@@ -75,8 +75,8 @@ dirP :: forall r m a
      -> m a
 dirP pred action = dirA \x -> guard (pred x) *> action
 
--- | Like `dir`, but matches <strong>a</strong>ny first path component. The
--- | first path component is passed as an argument to the Kleisli arrow.
+-- | Like `dir`, but matches *a*ny first path component. The first path
+-- | component is passed as an argument to the Kleisli arrow.
 dirA :: forall r m a
       . (MonadReader {uri :: String | r} m, MonadZero m)
      => (String -> m a)
