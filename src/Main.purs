@@ -3,6 +3,7 @@ module Main (main) where
 import Control.Monad.Eff (Eff)
 import Control.Monad.Reader.Class (ask, class MonadReader)
 import Cowlaser.HTTP (Request, Response)
+import Cowlaser.Params (query, query')
 import Cowlaser.Serve (nodeHandler)
 import Data.List (List(..))
 import Data.NonEmpty ((:|))
@@ -17,10 +18,15 @@ import Prelude
 handler :: forall eff m. (MonadReader (Request eff) m) => m (Response eff)
 handler = do
   (req :: Request eff) <- ask
+  xs <- query "x"
+  xm <- query' "x"
   pure { status: {code: 200, message: "OK"}
        , headers: Map.singleton (CI "Content-Type") ("text/html" :| Nil)
        , body: \w -> do
+           writeString w UTF8 ("<pre>" <> show req.uri <> "</pre>")
            writeString w UTF8 ("<pre>" <> show req.headers <> "</pre>")
+           writeString w UTF8 ("<pre>" <> show xs <> "</pre>")
+           writeString w UTF8 ("<pre>" <> show xm <> "</pre>")
            end w
        }
 
