@@ -20,7 +20,7 @@ module Cowlaser.Route
 import Control.Monad.Maybe.Trans (MaybeT, runMaybeT)
 import Control.Monad.Reader.Class (ask, local, class MonadReader)
 import Control.MonadZero (guard, class MonadZero)
-import Cowlaser.HTTP (Response)
+import Cowlaser.HTTP (Response, statusNotFound)
 import Data.Map as Map
 import Data.Maybe (fromMaybe)
 import Data.String.CaseInsensitive (CI)
@@ -37,7 +37,7 @@ withRouting
 withRouting action = runMaybeT action <#> fromMaybe notFound
   where notFound :: forall e. Response e
         notFound =
-          { status: {code: 404, message: "Not Found"}
+          { status: statusNotFound
           , headers: Map.empty
           , body: \w -> do
               Stream.writeString w UTF8 "404 Not Found"
